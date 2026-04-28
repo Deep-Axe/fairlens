@@ -1,0 +1,16 @@
+.env
+__pycache__
+*.pyc
+*.pyo
+.git
+.gitignore
+*.ipynb
+vertex_serving/
+results_fixed/
+*.csv
+.claude/
+.vscode/
+*.pptx
+*.zip
+*.md
+!README.md

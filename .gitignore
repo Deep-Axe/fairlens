@@ -1,0 +1,15 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+demo/model/
+results_fixed/
+adult/
+*.csv
+.vscode/
+.claude/
+*.pptx
+*.zip
+# Internal planning docs
+*.md
+!README.md
