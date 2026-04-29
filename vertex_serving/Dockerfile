@@ -6,7 +6,8 @@ RUN pip install --no-cache-dir \
     transformers==4.41.0 \
     fastapi==0.111.0 \
     uvicorn==0.29.0 \
-    accelerate>=0.31.0
+    accelerate>=0.31.0 \
+    google-cloud-storage>=2.16.0
 
 COPY serve.py .
 

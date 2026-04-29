@@ -63,10 +63,9 @@ class ModelWrapper:
 
     def predict(self, texts):
         if self._vertex:
-            preds = self._sentinel.predict_via_endpoint(texts)
-            # endpoint returns [[prob0, prob1], ...] — take argmax
             import numpy as np
-            return np.argmax(preds, axis=1)
+            # Vertex v2 endpoint returns integer class labels [0, 1, ...]
+            return np.array(self._sentinel.predict_via_endpoint(texts))
         self.model.eval()
         inputs = self.tokenizer(texts, padding=True, truncation=True, return_tensors="pt").to(self.device)
         with torch.no_grad():
@@ -76,7 +75,10 @@ class ModelWrapper:
 
     def predict_proba(self, texts):
         if self._vertex:
-            return self._sentinel.predict_via_endpoint(texts)
+            import numpy as np
+            # Endpoint returns class labels; convert to pseudo-probabilities
+            preds = np.array(self._sentinel.predict_via_endpoint(texts))
+            return np.column_stack([1 - preds, preds]).astype(float)
         self.model.eval()
         inputs = self.tokenizer(texts, padding=True, truncation=True, return_tensors="pt").to(self.device)
         with torch.no_grad():

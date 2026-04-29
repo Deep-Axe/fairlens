@@ -1,11 +1,11 @@
 """
 Compliance report generation — dual backend:
-  1. Vertex AI (Gemini 2.5 Pro) via google-genai SDK + ADC
-     Requires: GOOGLE_CLOUD_PROJECT set + gcloud auth application-default login
-  2. OpenAI (gpt-4o-mini) — fallback / local dev
+  1. Vertex AI (Gemini 2.5 Pro) via google-genai SDK + ADC  [PRIMARY]
+     Requires: GOOGLE_CLOUD_PROJECT set; on Cloud Run uses attached service account ADC automatically
+  2. OpenAI (gpt-4o-mini) — fallback for local dev          [FALLBACK]
      Requires: OPENAI_API_KEY set
 
-Priority: OpenAI if OPENAI_API_KEY is set, otherwise Vertex AI ADC.
+Priority: Vertex AI if GOOGLE_CLOUD_PROJECT is set, otherwise OpenAI.
 """
 
 import os
@@ -18,17 +18,17 @@ _GCP_PROJECT  = os.getenv("GOOGLE_CLOUD_PROJECT", "").strip()
 _GCP_LOCATION = os.getenv("GOOGLE_CLOUD_REGION", "us-central1")
 _OPENAI_KEY   = os.getenv("OPENAI_API_KEY", "").strip()
 
-if _OPENAI_KEY:
-    _BACKEND = "openai"
-    from openai import OpenAI as _OpenAI
-    _oa_client = _OpenAI(api_key=_OPENAI_KEY)
-    _OA_MODEL  = "gpt-4o-mini"
-elif _GCP_PROJECT:
+if _GCP_PROJECT:
     _BACKEND = "vertex"
     from google import genai as _genai
     from google.genai import types as _types
     _vertex_client = _genai.Client(vertexai=True, project=_GCP_PROJECT, location="global")
     _VERTEX_MODEL  = "gemini-2.5-pro"
+elif _OPENAI_KEY:
+    _BACKEND = "openai"
+    from openai import OpenAI as _OpenAI
+    _oa_client = _OpenAI(api_key=_OPENAI_KEY)
+    _OA_MODEL  = "gpt-4o-mini"
 else:
     _BACKEND = "none"
 

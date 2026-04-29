@@ -1,0 +1,12 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/project-6ba9d91e-20a2-4569-b66/fairlens/fairlens-ui:latest'
+      - '-f'
+      - 'Dockerfile'
+      - '.'
+images:
+  - 'us-central1-docker.pkg.dev/project-6ba9d91e-20a2-4569-b66/fairlens/fairlens-ui:latest'
+timeout: 1800s

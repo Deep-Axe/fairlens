@@ -457,6 +457,8 @@ with tab1:
         _pb.progress(100, text="Data scan complete.")
         st.session_state.audit_results["layer1"] = results
 
+    if st.session_state.audit_results.get("layer1"):
+        results = st.session_state.audit_results["layer1"]
         col1, col2 = st.columns(2)
         with col1:
             for attr, di in results["disparate_impact_data"].items():
@@ -513,6 +515,8 @@ with tab2:
         key = "after" if model_mode == "Surgically Fixed" else "before"
         st.session_state.comparison_data[key]["behavioral"] = results
 
+    if st.session_state.audit_results.get("layer2"):
+        results = st.session_state.audit_results["layer2"]
         for attr in st.session_state.protected_cols:
             if attr in results["group_metrics"]:
                 st.write(f"**Group-wise Metrics — {attr}**")
@@ -608,7 +612,6 @@ with tab3:
         with st.spinner("Probing hidden states at every BERT layer... (~1 min on CPU)"):
             auditor = MechanisticAuditor(model, tokenizer, device=device)
 
-            # Generic probe labels: most common value = class 1
             probe_labels = {
                 col: (
                     st.session_state.eval_df[col] == st.session_state.eval_df[col].mode()[0]
@@ -624,6 +627,8 @@ with tab3:
             key = "after" if model_mode == "Surgically Fixed" else "before"
             st.session_state.comparison_data[key]["mechanistic"] = results
 
+    if st.session_state.audit_results.get("layer3"):
+        results = st.session_state.audit_results["layer3"]
         attrs = list(results["probe_accuracies"].keys())
         if attrs:
             num_layers = len(next(iter(results["probe_accuracies"].values())))

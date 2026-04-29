@@ -19,6 +19,10 @@ import argparse
 import sys
 import json
 
+# Force UTF-8 output on Windows so Unicode box-drawing characters render correctly
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 import torch
 
 from utils.data_loader import load_user_csv, prepare_for_bert_generic
