@@ -25,6 +25,7 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
 
 import torch
 
+import pandas as pd
 from utils.data_loader import load_user_csv, prepare_for_bert_generic
 from utils.model_loader import load_fairlens_model, ModelWrapper
 from core.layer1_data import audit_data_bias
@@ -33,6 +34,33 @@ from core.layer3_mechanistic import MechanisticAuditor
 from core.regulatory_rules import evaluate_regulatory_compliance
 
 SEP = "─" * 60
+
+_ADULT_COLUMNS = [
+    "age", "workclass", "fnlwgt", "education", "education-num",
+    "marital-status", "occupation", "relationship", "race", "sex",
+    "capital-gain", "capital-loss", "hours-per-week", "native-country", "income",
+]
+
+def _load_data(path: str) -> "pd.DataFrame":
+    """Load a data file, auto-detecting the UCI Adult headerless format."""
+    with open(path, "r") as f:
+        first_line = f.readline()
+    if first_line.lstrip().startswith("|"):
+        # UCI adult.test: comment line + no header + trailing dot on income values
+        df = pd.read_csv(path, names=_ADULT_COLUMNS, sep=r",\s+", engine="python",
+                         na_values="?", skiprows=1)
+        df["income"] = df["income"].str.rstrip(".")
+    elif not first_line.split(",")[0].strip().lstrip("-").isdigit():
+        # Has a proper header row — use generic CSV loader
+        df = load_user_csv(path)
+    else:
+        # adult.data: no comment line, no header, no trailing dots
+        df = pd.read_csv(path, names=_ADULT_COLUMNS, sep=r",\s+", engine="python",
+                         na_values="?")
+    df = df.dropna()
+    for col in df.select_dtypes(include="object").columns:
+        df[col] = df[col].str.strip()
+    return df
 
 
 def run_audit(args):
@@ -46,8 +74,8 @@ def run_audit(args):
     print(f"Protected attributes: {args.protected}")
     print(SEP)
 
-    # Load data
-    df = load_user_csv(args.data)
+    # Load data — handle UCI adult headerless format automatically
+    df = _load_data(args.data)
     eval_df = prepare_for_bert_generic(
         df.head(200), args.label, args.protected, args.positive_outcome,
         include_protected=True,

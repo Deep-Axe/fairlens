@@ -7,6 +7,23 @@ steps:
       - '-f'
       - 'Dockerfile'
       - '.'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/project-6ba9d91e-20a2-4569-b66/fairlens/fairlens-ui:latest'
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'fairlens-ui'
+      - '--image=us-central1-docker.pkg.dev/project-6ba9d91e-20a2-4569-b66/fairlens/fairlens-ui:latest'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--update-env-vars=GOOGLE_CLOUD_PROJECT=project-6ba9d91e-20a2-4569-b66,GOOGLE_CLOUD_REGION=us-central1,FAIRLENS_VERTEX_BIASED_ENDPOINT=8747521546295181312,FAIRLENS_VERTEX_FIXED_ENDPOINT=7668909435539947520'
+
 images:
   - 'us-central1-docker.pkg.dev/project-6ba9d91e-20a2-4569-b66/fairlens/fairlens-ui:latest'
 timeout: 1800s
